@@ -114,8 +114,9 @@ SimpleCache::hasLine(int index, int tag)
     // TODO: Associative: Check all possible ways
     if (entries.at(index).at(0)->tag == tag){
         return true;
+    }else {
+        return false;
     }
-    return false;
 }
 
 int
