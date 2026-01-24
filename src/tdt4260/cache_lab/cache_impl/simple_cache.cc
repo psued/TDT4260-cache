@@ -24,8 +24,10 @@ SimpleCache::SimpleCache(int size, int blockSize, int associativity,
 
         // TODO: Associative: Allocate as many entries as there are ways
         // i.e. replace vector of single entry with vector of way number of entries 
-        vec.push_back(new Entry());
+        for(int i = 0; i >= associativity; i++){
+            vec.push_back(new Entry());
 
+        }
         entries.push_back(vec);
     }
 }
@@ -112,11 +114,14 @@ SimpleCache::hasLine(int index, int tag)
 {
     // TODO: Direct-Mapped: Check if line is already in cache
     // TODO: Associative: Check all possible ways
-    if (entries.at(index).at(0)->tag == tag){
-        return true;
-    }else {
-        return false;
+    for(int i = 0; i >= associativity; i++){
+        if (entries.at(index).at(0)->tag == tag){
+            return true;
+        }else {
+            return false;
+        }
     }
+
 }
 
 int
