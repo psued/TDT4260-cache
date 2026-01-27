@@ -15,6 +15,9 @@
 #include <sys/time.h>
 #include <unistd.h>
 
+#define MIN(a,b) ((a) < (b) ? (a) : (b))
+
+
 /* Size of the matrices to multiply */
 #define SIZE 200
 
@@ -45,12 +48,21 @@ matmul_opt()
          */
         int i, j, k;
 
-                for (k = 0; k < SIZE; k++) {
-        for (j = 0; j < SIZE; j++) {
-            for (i = 0; i < SIZE; i++) {
-                    mat_c[i][j] += mat_a[i][k] * mat_b[k][j];
+        int blockSize = 32;
+
+        int jj, kk, r;
+        for (jj=0; jj<SIZE;jj=jj+blockSize){
+                for (kk=0; kk<SIZE;kk=kk+blockSize){
+                        for(i=0;i<SIZE;i++){
+                                for(j=jj;j<MIN(jj+blockSize,SIZE);j++){
+                                        r=0;
+                                        for(k=kk;k<MIN(kk+blockSize,SIZE);k++){
+                                                r = r + mat_a[i][k] * mat_b[k][j];
+                                        }
+                                mat_c[i][j] += r;
+                                }
+                        }
                 }
-            }
         }
 }
 
