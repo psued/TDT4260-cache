@@ -24,7 +24,7 @@ SimpleCache::SimpleCache(int size, int blockSize, int associativity,
 
         // TODO: Associative: Allocate as many entries as there are ways
         // i.e. replace vector of single entry with vector of way number of entries 
-        for(int i = 0; i >= associativity; i++){
+        for(int i = 0; i < associativity; i++){
             vec.push_back(new Entry());
 
         }
@@ -62,6 +62,7 @@ SimpleCache::recvReq(Addr req, int size)
         DPRINTF(TDTSimpleCache, "Hit: way: %d\n", way);
 
         // TODO: Associative: Update LRU info for line in entries
+        entries.at(index).at(way)->lastUsed = useCounter++;
 
         sendResp(req);
     } else{
@@ -83,10 +84,12 @@ SimpleCache::recvResp(Addr resp)
     int way = oldestWay(index);
     DPRINTF(TDTSimpleCache, "Miss: Replaced way: %d\n", way);
     // TODO: Direct-Mapped: Record new cache line in entries
-    entries.at(index).at(0)->tag = tag;
+    entries.at(index).at(way)->tag = tag;
     
 
     // TODO: Associative: Record LRU info for new line in entries
+    entries.at(index).at(way)->lastUsed = useCounter++;
+
     sendResp(resp);
 }
 
@@ -114,13 +117,12 @@ SimpleCache::hasLine(int index, int tag)
 {
     // TODO: Direct-Mapped: Check if line is already in cache
     // TODO: Associative: Check all possible ways
-    for(int i = 0; i >= associativity; i++){
-        if (entries.at(index).at(0)->tag == tag){
+    for(int i = 0; i < associativity; i++){
+        if (entries.at(index).at(i)->tag == tag){
             return true;
-        }else {
-            return false;
         }
     }
+    return false;
 
 }
 
@@ -128,6 +130,11 @@ int
 SimpleCache::lineWay(int index, int tag)
 {
     // TODO: Associative: Find in which way a cache line is stored
+    for(int i=0; i<associativity;i++){
+        if(entries.at(index).at(i)->tag == tag){
+            return i;
+        }
+    }
     return 0;
 }
 
@@ -135,7 +142,17 @@ int
 SimpleCache::oldestWay(int index)
 {
     // TODO: Associative: Determine the oldest way
-    return 0;
+    //start with just the first entry in the set as reference value
+    int currentLowestUsed = entries.at(index).at(0)->lastUsed;
+    int currentLowestPosition = 0;
+    for(int i=0;i<associativity;i++){
+        if(entries.at(index).at(i)->lastUsed<currentLowestUsed){
+            currentLowestUsed = entries.at(index).at(i)->lastUsed;
+            currentLowestPosition = i;
+
+        }
+    }
+    return currentLowestPosition;
 }
 
 void
